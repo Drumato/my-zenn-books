@@ -1,7 +1,8 @@
-title: "とりあえず使えるようになるZig入門"
-summary: ""
+title: "[全編無料] 他言語習得者がとりあえず使えるようになるZig"
+summary: "公式ドキュメントを私的に噛み砕きつつ、いくつかのコラムを添えて、Zigに入門する本です。"
 topics: ["zig"]
 published: false
 price: 500
 chapters:
-
+- introduction
+- after-talk 
