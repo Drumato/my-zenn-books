@@ -3,7 +3,7 @@ title: "余談"
 free: true
 ---
 
-## ご挨拶
+# ご挨拶
 
 こんにちは。著者のDrumatoです。
 
