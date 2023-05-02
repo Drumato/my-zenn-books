@@ -3,16 +3,9 @@ title: "Zigの特徴-Robustness-"
 free: true
 ---
 
-# Robustness
+# Zigの特徴-Robustness-
 
-Zigの大きな特徴に、 **プログラムの挙動が安定的であり、コントロール可能** というものがあります。
-公式ドキュメントでは、以下のように述べられています。
-
-> **Robust**
-> Behavior is correct even for edge cases such as out of memory.
->
-> <https://ziglang.org/documentation/0.10.1/#toc-Introduction> より引用
-
+Zigの大きな特徴に、 **プログラムの挙動が安定的であり、コントロール可能な堅牢性を持つ** というものがあります。
 いくつか具体的な例を見てみましょう。
 現時点では細かい文法や機能の解説はしないので、雰囲気だけ感じ取っていただければと思います。
 

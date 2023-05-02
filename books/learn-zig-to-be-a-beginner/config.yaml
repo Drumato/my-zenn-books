@@ -5,6 +5,9 @@ published: false
 price: 500
 chapters:
 - introduction
+- about-zig
 - about-zig-robustness
+- about-zig-reusability
 - after-talk
+- history
 
