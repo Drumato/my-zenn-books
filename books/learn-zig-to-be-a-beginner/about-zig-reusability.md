@@ -13,7 +13,9 @@ Zigは、コンパイラ等が内部で設定し利用する情報等を、 `@im
 
 ```zig
 const builtin = @import("builtin");
-const std = @import("std"); pub fn main() void {
+const std = @import("std");
+
+pub fn main() void {
     std.debug.print("abi = {}\n", .{builtin.abi}); // ビルドターゲットのABI情報
     std.debug.print("cpu_architecture = {}\n", .{builtin.cpu.arch}); // ビルドターゲットのCPUアーキテクチャ
     std.debug.print("os = {}\n", .{builtin.os.tag}); // ビルドターゲットのOS
@@ -41,7 +43,6 @@ const std = @import("std");
 pub fn main() void {
     std.debug.print("value = {}\n", .{f(30)});
 }
-
 
 fn f(src: isize) isize {
     return switch (builtin.os.tag) {

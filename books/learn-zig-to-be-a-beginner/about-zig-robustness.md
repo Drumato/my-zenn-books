@@ -15,8 +15,10 @@ Zigの大きな特徴に、 **プログラムの挙動が安定的であり、�
 以下のプログラムをコンパイルしようとすると、コンパイルエラーが出力されます。
 
 ```zig
+const std = @import("std");
+
 pub fn main() void {
-    const a1: [5]u8 = [_]u8{1, 2, 3, 4, 5};
+    const a1: [5]u8 = [_]u8{ 1, 2, 3, 4, 5 };
 
     // will detect at compile-time
     const index_out_of_bounds = a1[5];
@@ -41,7 +43,7 @@ referenced by:
 const std = @import("std");
 
 pub fn main() void {
-    const a1: [5]u8 = [_]u8{1, 2, 3, 4, 5};
+    const a1: [5]u8 = [_]u8{ 1, 2, 3, 4, 5 };
     foo(&a1);
 }
 
@@ -198,7 +200,7 @@ fn f(v: u8) void {
     // T!Uという型と記法については後述
     // 今はRustのResultや、HaskellのEither｢っぽい｣ものと思ってOK
     const added = std.math.add(u8, v, 1) catch |err| {
-        std.debug.panic("overflow detected; src={}, adder={}, err={}\n", .{v, 1, err});
+        std.debug.panic("overflow detected; src={}, adder={}, err={}\n", .{ v, 1, err });
     };
 
     std.debug.print("{}\n", .{added});

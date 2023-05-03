@@ -9,5 +9,7 @@ chapters:
 - about-zig-robustness
 - about-zig-reusability
 - after-talk
+- primitive-type
+- primitive-type-integer
 - history
 
