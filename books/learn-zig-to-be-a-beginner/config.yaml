@@ -5,11 +5,14 @@ published: false
 price: 500
 chapters:
 - introduction
+- using-test-as-samples
 - about-zig
 - about-zig-robustness
 - about-zig-reusability
-- after-talk
 - primitive-type
 - primitive-type-integer
+- primitive-type-etc
+- using-zig-stdlib-parser
 - history
+- after-talk
 

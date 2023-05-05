@@ -17,24 +17,12 @@ Zigの大きな特徴に、 **プログラムの挙動が安定的であり、�
 ```zig
 const std = @import("std");
 
-pub fn main() void {
+test "test" {
     const a1: [5]u8 = [_]u8{ 1, 2, 3, 4, 5 };
 
-    // will detect at compile-time
-    const index_out_of_bounds = a1[5];
-    std.debug.print("{}\n", .{index_out_of_bounds});
+    // error: index 5 outside array of length 5
+    _ = a1[5];
 }
-```
-
-```shell
-$ zig build-exe z.zig
-z.zig:7:36: error: index 5 outside array of length 5
-    const index_out_of_bounds = a1[5];
-                                   ^
-referenced by:
-    callMain: /home/drumato/.zig/lib/std/start.zig:604:17
-    initEventLoopAndCallMain: /home/drumato/.zig/lib/std/start.zig:548:51
-    remaining reference traces hidden; use '-freference-trace' to see all reference traces
 ```
 
 また、コンパイル時に検知不可能なものに対しても、実行時パニックによって異常終了します。
@@ -42,34 +30,15 @@ referenced by:
 ```zig
 const std = @import("std");
 
-pub fn main() void {
-    const a1: [5]u8 = [_]u8{ 1, 2, 3, 4, 5 };
-    foo(&a1);
+fn access_out_of_bound(s: []const u8) void {
+    // panic: index out of bounds: index 5, len 5
+    _ = s[5];
 }
 
-fn foo(s1: []const u8) void {
-    // will detect at runtime
-    const index_out_of_bounds = s1[5];
-    std.debug.print("{}\n", .{index_out_of_bounds});
+test "test" {
+    const a: [5]u8 = [_]u8{ 1, 2, 3, 4, 5 };
+    access_out_of_bound(&a);
 }
-```
-
-```shell
-$ zig build-exe sample.zig
-$ ./sample
-thread 30792 panic: index out of bounds: index 5, len 5                                                                                                                                       
-./sample.zig:10:35: 0x211e4a in foo (sample)                                                                                                                                                            
-    const index_out_of_bounds = s1[5];                                                                                                                                                        
-                                  ^                                                                                                                                                           
-./sample.zig:5:8: 0x2102d0 in main (sample)                                                                                                                                                             
-    foo(&a1);                                                                                                                                                                                 
-       ^                                                                                                                                                                                      
-/home/drumato/.zig/lib/std/start.zig:604:22: 0x20f84c in posixCallMainAndExit (sample)                                                                                                             
-            root.main();                                                                                                                                                                      
-                     ^                                                                                                                                                                        
-/home/drumato/.zig/lib/std/start.zig:376:5: 0x20f351 in _start (sample)                                                                                                                            
-    @call(.{ .modifier = .never_inline }, posixCallMainAndExit, .{});                                                                                                                         
-    ^                                                                                                                                                                                         
 ```
 
 これは、RustやGoのようなプログラミング言語でも見られる挙動です。
@@ -157,7 +126,7 @@ large2をsmall2に代入する部分でコンパイルエラーが出力され�
 // コンパイル時チェックの例
 const std = @import("std");
 
-pub fn main() void {
+test "test" {
     const large1: u64 = 255;
     const small1: u8 = large1;
     _ = small1;
@@ -173,37 +142,40 @@ pub fn main() void {
 // ランタイムチェックの例
 const std = @import("std");
 
-pub fn main() void {
-    const large1: u64 = 255;
-    f(large1);
+fn add(v: u8) void {
+    // panic: integer overflow
+    _ = v + 1;
 }
 
-fn f(v: u8) void {
-    // panic: integer overflow
-    std.debug.print("{}\n", .{v + 1});
+test "test" {
+    const large1: u64 = 255;
+    add(large1);
 }
 ```
 
 ```zig
-// オーバーフローを考慮した、Zigらしいプログラム
+// オーバーフローを考慮したプログラム
 const std = @import("std");
 
-pub fn main() void {
-    const large1: u64 = 254;
-    const large2: u64 = 255;
-    f(large1);
-    f(large2);
-}
-
-fn f(v: u8) void {
+// ?Tという型と記法については後述
+// こちらはRustのOption<T>とほぼ同じ
+fn checked_add(v: u8) ?u8 {
     // std.math.addは error{Overflow}!Tという値を返す
     // T!Uという型と記法については後述
     // 今はRustのResultや、HaskellのEither｢っぽい｣ものと思ってOK
-    const added = std.math.add(u8, v, 1) catch |err| {
-        std.debug.panic("overflow detected; src={}, adder={}, err={}\n", .{ v, 1, err });
+    const added = std.math.add(u8, v, 1) catch {
+        return null;
     };
 
-    std.debug.print("{}\n", .{added});
+    return added;
+}
+
+test "test" {
+    const large1: u64 = 254;
+    try std.testing.expect(checked_add(large1) == @as(?u8, 255));
+
+    const large2: u64 = 255;
+    try std.testing.expect(checked_add(large2) == null);
 }
 ```
 

@@ -12,10 +12,6 @@ Zigの大きな特徴の一つに、
 
 以下のサンプルでは、このような型に対しても、コンパイル時に型のインスタンスが取りうる値の範囲内に存在するかチェックしてくれていることがわかります。
 
-:::message
-非常に長い数字が続きます
-:::
-
 ```zig
 const std = @import("std");
 
@@ -103,6 +99,8 @@ fn print_segment_members_offset() void {
 }
 ```
 
+筆者のビルド環境では、以下のように出力されました。
+
 ```shell
 $ ./sample 
 TcpSegment alignment = 4
@@ -186,7 +184,34 @@ Rustでは、これらは標準ライブラリとして提供されている点�
 
 <https://doc.rust-lang.org/stable/std/ffi/index.html>
 
+## Peer Type Resolution
+
+整数型(を含む基本的な型)に対する演算子は、以下にチートシートが用意されています。
+
+<https://ziglang.org/documentation/0.10.1/#Operators>
+
+ここで、 **Peer Type Resolution** という挙動について解説します。
+これは、特定のケースで行われる型解決の仕組みです。
+
+公式ドキュメントから、整数型に関連する内容をまとめると、
+**(`i8` と `i16`)など、サイズの異なる整数型同士の計算結果は、サイズの大きい型に準ずる** というものです。
+具体例を見てみましょう。
+
+```zig
+const std = @import("std");
+
+test "test" {
+    const a = @as(i8, 1);
+    const b = @as(i16, 2);
+    // ここで c の型が、bの型に従って決まる
+    const c = a + b;
+    try std.testing.expectEqual(i16, @TypeOf(c));
+}
+```
+
 ## 参考文献
 
 - <https://ziglang.org/documentation/0.10.1/#Primitive-Types>
-- <https://github.com/ziglang/zig/blob/master/src/type.zig>
+- <https://github.com/ziglang/zig/blob/0.10.1/src/type.zig>
+- <https://ziglang.org/documentation/0.10.1/#Peer-Type-Resolution>
+
