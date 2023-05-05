@@ -132,3 +132,61 @@ urgent_pointer: 20
 
 ![primitive-type-integer-struct-layout](https://i.imgur.com/HTtI6d0.png)
 
+このような挙動はRustでも再現可能です。
+Rustでは`repr(packed)` マクロを利用できます。
+https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=f84a74ed3c6d7baf7d04880424ae33ae
+
+```
+#[allow(dead_code)]
+struct S1 {
+    src_port: u16,
+    dst_port: u16,
+    seq_num: u32,
+    ack_num: u32,
+    data_offset: u8,
+    reserved: u8,
+    flags: u8,
+    window: u16,
+    checksum: u16,
+    urgent_pointer: u16,
+}
+
+#[allow(dead_code)]
+#[repr(packed)]
+struct S2 {
+    src_port: u16,
+    dst_port: u16,
+    seq_num: u32,
+    ack_num: u32,
+    data_offset: u8,
+    reserved: u8,
+    flags: u8,
+    window: u16,
+    checksum: u16,
+    urgent_pointer: u16,
+}
+
+fn main() {
+    dbg!(std::mem::size_of::<S1>());
+    dbg!(std::mem::size_of::<S2>());
+}
+```
+
+## Cとの互換性
+
+詳しくはC FFIの部分で触れると思いますが、
+ここでZigとC言語で、プリミティブ型にどう互換性があるのかについて触れたいと思います。
+
+まず、先ほど紹介した `i<N>` 等が、そもそもC言語と互換のある形で実装されています。
+例えば `i8` は `int8_t` に対応し、 `usize` は `uinptr_t` や `size_t` に対応しています。
+
+また、それとは異なる型として、 `c_` から始まる型が存在します。
+例えば `c_short` や、 `c_longlong` などが該当します。
+Rustでは、これらは標準ライブラリとして提供されている点が異なります。
+
+<https://doc.rust-lang.org/stable/std/ffi/index.html>
+
+## 参考文献
+
+- <https://ziglang.org/documentation/0.10.1/#Primitive-Types>
+- <https://github.com/ziglang/zig/blob/master/src/type.zig>
