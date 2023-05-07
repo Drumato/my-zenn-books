@@ -115,6 +115,48 @@ test "test" {
 }
 ```
 
+Rustでジェネリックな型パラメータを持つ型を定義する際には、以下のようにして、型定義に直接書き込むことができます。
+
+```rust
+struct S<T> {
+    value: T
+}
+```
+
+Zigではこれと異なり、 `comptime T: type` を受け取って型を返す関数を定義することで実現します。
+これは、`std.ArrayList(T)` などの標準ライブラリも採用している方法です。
+
+## anyopaque
+
+初見で読み間違える技術英単語ランキングを作ったら、上位に来る `opaque` が入っているこの型ですが、
+これはCにおける `void` と同等に扱える型となっています。
+ただし、 `align(8)` のようにバイトアラインメントを指定する修飾子をつけないと、
+`*const isize` のようなポインタを代入できない点に注意してください。
+
+`anyopaque` については、`std.heap.ArenaAllocator` の内部実装等で用いられていますので、
+詳しくはそちらのコード等を読んでみてください。
+本書では、｢とりあえず使えるようになる｣の範疇を超えているため、詳しい解説は省略します。
+
+```zig
+const std = @import("std");
+const builtin = @import("builtin");
+
+const S = struct {
+    ptr: *align(8) const anyopaque,
+};
+
+test "test" {
+    const isize_v: isize = 1;
+    const string_v: []const u8 = "Drumato";
+    const s1 = S{ .ptr = @ptrCast(*const anyopaque, &isize_v) };
+    const s2 = S{ .ptr = @ptrCast(*const anyopaque, &string_v) };
+
+    try std.testing.expect(@ptrCast(*const isize, s1.ptr).* == 1);
+    try std.testing.expectEqualStrings("Drumato", @ptrCast(*const []const u8, s2.ptr).*);
+}
+```
+
+
 ### 今後の章で解説する型
 
 Primitive Types には他にも型が存在しますが、
