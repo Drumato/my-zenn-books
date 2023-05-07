@@ -1,4 +1,4 @@
-title: "[全編無料] 他言語習得者がとりあえず使えるようになるZig"
+title: "[全編無料][鋭意執筆中] 他言語習得者がとりあえず使えるようになるZig"
 summary: >-
     公式ドキュメントを私的に噛み砕きつつ、いくつかのコラムを添えて、Zigに入門する本です。
     この本を読めばZigの機能を網羅できるわけではありませんが、取っ掛かりがつかめる様になると思います。
@@ -42,7 +42,7 @@ chapters:
 - stdlib-json
 - stdlib-fmt
 - stdlib-io
-- freq-builtin-funciton
+- freq-builtin-function
 - c-ffi
 - code-reading-stdlib-arraylist
 - code-reading-stdlib-zig-parser
