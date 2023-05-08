@@ -125,9 +125,11 @@ test "test" {
 }
 ```
 
-## 整数値をメモリアドレスとしてポインタを初期化
-
 ## 参考文献
 
 - <https://ziglang.org/documentation/0.10.1/#Pointers>
+- 興味のある人は以下も
+  - <https://ziglang.org/documentation/0.10.1/#volatile>
+    - メモリマップドI/Oを扱うプログラムを書く際に用いられる機能です
+    - Zigではポインタ型自体に `volatile` であるかどうかがマークされ、ソースコード表現の通りにコンパイルされます
 
