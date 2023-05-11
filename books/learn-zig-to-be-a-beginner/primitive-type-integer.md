@@ -36,7 +36,7 @@ pub fn main() void {
 :::
 
 ```zig
-const TcpSegment = struct {
+const TcpSegmentHeader = struct {
     src_port: u16,
     dst_port: u16,
     seq_num: u32,
@@ -64,7 +64,7 @@ const TcpSegment = struct {
 ```zig
 const std = @import("std");
 
-const TcpSegment = struct {
+const TcpSegmentHeader = struct {
     src_port: u16,
     dst_port: u16,
     seq_num: u32,
@@ -79,23 +79,23 @@ const TcpSegment = struct {
 };
 
 pub fn main() void {
-    std.debug.print("TcpSegment alignment = {}\n", .{@alignOf(TcpSegment)});
-    std.debug.print("TcpSegment struct size = {}\n", .{@sizeOf(TcpSegment)});
+    std.debug.print("TcpSegmentHeader alignment = {}\n", .{@alignOf(TcpSegmentHeader)});
+    std.debug.print("TcpSegmentHeader struct size = {}\n", .{@sizeOf(TcpSegmentHeader)});
     print_segment_members_offset();
 }
 
 fn print_segment_members_offset() void {
-    std.debug.print("=== TcpSegment members offset ===\n", .{});
-    std.debug.print("src_port = {}\n", .{@offsetOf(TcpSegment, "src_port")});
-    std.debug.print("dst_port = {}\n", .{@offsetOf(TcpSegment, "dst_port")});
-    std.debug.print("seq_num = {}\n", .{@offsetOf(TcpSegment, "seq_num")});
-    std.debug.print("ack_num = {}\n", .{@offsetOf(TcpSegment, "ack_num")});
-    std.debug.print("data_offset = {}\n", .{@offsetOf(TcpSegment, "data_offset")});
-    std.debug.print("reserved = {}\n", .{@offsetOf(TcpSegment, "reserved")});
-    std.debug.print("flags = {}\n", .{@offsetOf(TcpSegment, "flags")});
-    std.debug.print("window = {}\n", .{@offsetOf(TcpSegment, "window")});
-    std.debug.print("checksum = {}\n", .{@offsetOf(TcpSegment, "checksum")});
-    std.debug.print("urgent_pointer = {}\n", .{@offsetOf(TcpSegment, "urgent_pointer")});
+    std.debug.print("=== TcpSegmentHeader members offset ===\n", .{});
+    std.debug.print("src_port = {}\n", .{@offsetOf(TcpSegmentHeader, "src_port")});
+    std.debug.print("dst_port = {}\n", .{@offsetOf(TcpSegmentHeader, "dst_port")});
+    std.debug.print("seq_num = {}\n", .{@offsetOf(TcpSegmentHeader, "seq_num")});
+    std.debug.print("ack_num = {}\n", .{@offsetOf(TcpSegmentHeader, "ack_num")});
+    std.debug.print("data_offset = {}\n", .{@offsetOf(TcpSegmentHeader, "data_offset")});
+    std.debug.print("reserved = {}\n", .{@offsetOf(TcpSegmentHeader, "reserved")});
+    std.debug.print("flags = {}\n", .{@offsetOf(TcpSegmentHeader, "flags")});
+    std.debug.print("window = {}\n", .{@offsetOf(TcpSegmentHeader, "window")});
+    std.debug.print("checksum = {}\n", .{@offsetOf(TcpSegmentHeader, "checksum")});
+    std.debug.print("urgent_pointer = {}\n", .{@offsetOf(TcpSegmentHeader, "urgent_pointer")});
 }
 ```
 
@@ -103,9 +103,9 @@ fn print_segment_members_offset() void {
 
 ```shell
 $ ./sample 
-TcpSegment alignment = 4
-TcpSegment struct size = 24
-=== TcpSegment members offset ===
+TcpSegmentHeader alignment = 4
+TcpSegmentHeader struct size = 24
+=== TcpSegmentHeader members offset ===
 src_port: 0
 dst_port: 2
 seq_num: 4

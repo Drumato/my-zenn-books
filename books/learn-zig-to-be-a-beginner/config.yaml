@@ -33,6 +33,7 @@ chapters:
 - if
 - defer
 - function
+- undefined
 - error-handling
 - comptime
 - memory-allocator
