@@ -24,8 +24,6 @@ chapters:
 - struct
 - enum
 - union
-- custom-type 
-- syntax
 - block
 - switch
 - while
