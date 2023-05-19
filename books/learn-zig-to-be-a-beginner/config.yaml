@@ -26,9 +26,6 @@ chapters:
 - union
 - block
 - switch
-- while
-- for
-- if
 - defer
 - function
 - undefined
@@ -36,7 +33,7 @@ chapters:
 - comptime
 - memory-allocator
 - how-to-start-zig-project
-- stdlib-arraylist
+- stdlib-arraylist 
 - stdlib-enumset
 - stdlib-json
 - stdlib-fmt
