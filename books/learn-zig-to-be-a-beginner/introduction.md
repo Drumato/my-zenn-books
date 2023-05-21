@@ -72,29 +72,22 @@ Zigの理解をサポートするための補足情報を適宜混ぜながら�
     - [x] 構造体
     - [x] enum
     - [x] union
+    - [x] エラー型
 - [ ] Zigの構文
     - [x] `block`
     - [x] `labeled break`
     - [x] `switch`
-    - [ ] `defer`
-    - [ ] 関数
-- [ ] エラーハンドリング
+    - [x] `defer`
+    - [x] 関数
 - [ ] comptime
 - [ ] メモリアロケータ
-- [ ] Zigプロジェクトの始め方
 - [ ] よく使いそうな標準ライブラリ解説
-    - [ ] `std.ArrayList`
-    - [ ] `std.EnumSet`
     - [ ] `std.json`
     - [ ] `std.fmt`
-    - [ ] `std.fs`
-- [ ] よく使いそうな組み込み関数解説
-- [ ] C FFI
 - [ ] 実践編
     - [x] 標準ライブラリのコードを読んでみよう
       - [x] `std.ArrayList`
     - [x] 標準ライブラリのZigパーサを使ってみよう
-    - [ ] GNU Coreutilsから、lsコマンドのサブセットを作ってみよう
 
 ## 参考文献
 
