@@ -29,8 +29,6 @@ chapters:
 - switch
 - defer
 - function
-- comptime
-- memory-allocator
 - stdlib-json
 - stdlib-fmt
 - stdlib-io
