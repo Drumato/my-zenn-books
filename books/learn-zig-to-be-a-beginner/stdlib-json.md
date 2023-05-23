@@ -9,6 +9,13 @@ free: true
 第一弾として、 `std.json` を見ていきましょう。
 このライブラリは、JSONパーサやバリデータを提供しています。
 
+Zigの標準ライブラリを理解するコツとしては、
+<https://ziglang.org/documentation/0.10.1/std/#root> をよく読みに行くことと、
+標準ライブラリの実装のうち、 `test {}` を見て挙動を理解することです。
+たとえば、 `std.ArrayList(T)` の `insert()` メソッドであれば、以下のようなテストが用意されています。
+
+<https://ziglang.org/documentation/0.10.1/std/src/array_list.zig.html#L1180>
+
 ## JSONのバリデーション
 
 `std.json.validate()` を利用して、JSONのバリデーションを行ってみます。

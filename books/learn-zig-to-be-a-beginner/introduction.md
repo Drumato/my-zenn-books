@@ -81,13 +81,33 @@ Zigの理解をサポートするための補足情報を適宜混ぜながら�
       - [x] `defer`
       - [x] 関数
 - [x] 後半戦-Zigプログラミング実践編-
-    - [ ] よく使いそうな標準ライブラリ解説
-        - [ ] `std.json`
-        - [ ] `std.fmt`
-    - [ ] 実践編
-        - [x] 標準ライブラリのコードを読んでみよう
-          - [x] `std.ArrayList`
-        - [x] 標準ライブラリのZigパーサを使ってみよう
+    - [x] よく使いそうな標準ライブラリ解説
+        - [x] `std.json`
+        - [x] `std.EnumSet`
+    - [x] ビルドスクリプト
+    - [x] 標準ライブラリのコードを読んでみよう
+        - [x] `std.ArrayList`
+    - [x] 標準ライブラリのZigパーサを使ってみよう
+    - [ ] GNU coreutils lsのサブセットを作ってみよう
+    - [ ] 四則演算ができる電卓を作ってみよう
+    - [ ] HTTPエコーサーバを作ってみよう
+
+## 本書のスコープ外
+
+以下の言語機能等については、検討の末説明しないことにしました。
+参考になるリンクを貼っておくので、適宜参照していただけますと幸いです。
+
+- `undefined`( <https://ziglang.org/documentation/0.10.1/#undefined> )
+- 制御構文
+  - `while`(<https://ziglang.org/documentation/0.10.1/#while>)
+  - `for`(<https://ziglang.org/documentation/0.10.1/#for>)
+  - `if`(<https://ziglang.org/documentation/0.10.1/#if>)
+- `usingnamespace`( <https://ziglang.org/documentation/0.10.1/#usingnamespace> )
+- インラインアセンブリ( <https://ziglang.org/documentation/0.10.1/#Assembly> )
+- `async`( <https://ziglang.org/documentation/0.10.1/#Async-Functions> )
+- メモリアロケータ( <https://ziglang.org/documentation/0.10.1/#Memory> )
+- C言語関連の知識( <https://ziglang.org/documentation/0.10.1/#C> )
+- WebAssembly( <https://ziglang.org/documentation/0.10.1/#WebAssembly> )
 
 ## 参考文献
 
