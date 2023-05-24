@@ -122,9 +122,9 @@ pub fn build(b: *std.build.Builder) void {
     test_step.dependOn(&exe_tests.step);
     exe.step.dependOn(test_step);
 
-    exe.setTarget(target);
-    exe.setBuildMode(mode);
-    exe.install();
++   exe.setTarget(target);
++   exe.setBuildMode(mode);
++   exe.install();
 }
 ```
 
