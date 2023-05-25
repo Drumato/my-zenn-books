@@ -49,7 +49,7 @@ test "test" {
 
 - `var x` を指す`var ptr_x`
 - `const x` を指す`var ptr_x`
-- `const x` を指す`const ptr_x`
+- `var x` を指す`const ptr_x`
 - `const x` を指す`const ptr_x`
 
 それぞれの挙動を表したサンプルを以下に示します。
