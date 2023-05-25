@@ -1,37 +1,64 @@
 const std = @import("std");
 
+const maximum_target_count: usize = 32;
+const CommandLineOption = struct {
+    targets: [maximum_target_count][]const u8 = undefined,
+    target_count: usize = 0,
+    all_files: bool = false,
+};
+
 pub fn main() !void {
     var args = std.process.ArgIterator.init();
     std.debug.assert(args.next() != null);
 
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
+    const opt = try parseCmdArgs(&args);
+    var stdout = std.io.getStdOut().writer();
 
-    _ = std.io.getStdOut().writer();
+    var index: usize = 0;
+    while (index < opt.target_count) : (index += 1) {
+        const target_path = opt.targets[index];
 
-    while (args.next()) |arg| {
         const cwd = std.fs.cwd();
 
-        const target_dir = if (std.fs.path.isAbsolute(arg)) blk: {
-            break :blk try std.fs.openIterableDirAbsolute(arg, std.fs.Dir.OpenDirOptions{});
-        } else blk: {
-            break :blk try cwd.openIterableDir(arg, std.fs.Dir.OpenDirOptions{});
+        const target_dir = if (std.fs.path.isAbsolute(target_path)) blk: {
+            break :blk try std.fs.openIterableDirAbsolute(target_path, std.fs.Dir.OpenDirOptions{});
+        } else else_blk: {
+            break :else_blk try cwd.openIterableDir(target_path, std.fs.Dir.OpenDirOptions{});
         };
-        const entries = try listEntriesInDir(allocator, &target_dir);
-        defer entries.deinit();
+
+        var target_dir_entries = target_dir.iterate();
+        while (try target_dir_entries.next()) |target_dir_entry| {
+            const hide_file = !opt.all_files;
+            if (hide_file and target_dir_entry.name[0] == '.') {
+                continue;
+            }
+
+            try stdout.print("{s} ", .{target_dir_entry.name});
+        }
     }
 }
 
-fn listEntriesInDir(
-    allocator: std.mem.Allocator,
-    target_dir: *const std.fs.IterableDir,
-) !std.ArrayList([]const u8) {
-    var entry_names = std.ArrayList([]const u8).init(allocator);
+const CmdArgsParseError = error{
+    MaximumTargetCountReached,
+};
 
-    var target_dir_entries = target_dir.iterate();
-    while (try target_dir_entries.next()) |target_dir_entry| {
-        try entry_names.append(target_dir_entry.name);
+fn parseCmdArgs(
+    args: *std.process.ArgIterator,
+) CmdArgsParseError!CommandLineOption {
+    var opt = CommandLineOption{};
+    while (args.next()) |arg| {
+        if (std.mem.eql(u8, arg, "-a")) {
+            opt.all_files = true;
+            continue;
+        }
+
+        if (opt.target_count == 32) {
+            return CmdArgsParseError.MaximumTargetCountReached;
+        }
+
+        opt.targets[opt.target_count] = arg;
+        opt.target_count += 1;
     }
 
-    return entry_names;
+    return opt;
 }
