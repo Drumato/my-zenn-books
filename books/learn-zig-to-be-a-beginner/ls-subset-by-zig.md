@@ -24,7 +24,7 @@ $ zig init-exe
 生成された build.zig で、 `zig fmt` が自動実行されるように編集しましょう。
 
 
-```dif
+```diff
 const std = @import("std");
 
 + const fmt_paths = [_][]const u8{
@@ -116,6 +116,7 @@ dev var lost+found opt etc sys mnt lib usr root srv sbin tmp home snap boot lib6
 ## `-a` オプションを作ってみる
 
 次は `.` から始まるファイル等も出力してくれる、 `-a` を作ってみます。
+ちなみに、今回は `.` や `..` は扱わないことにします。
 適当に一時的なディレクトリを作って、テスト用ファイルをおいておきます。
 
 ```shell
@@ -129,46 +130,40 @@ $ touch ~/tmp/c
 
 ```shell
 $ ./zig-out/bin/ls-subset ~/tmp
-c .a .b ⏎                                                                                                                                                                                                          drumato@pop-os ~/g/g/D/m/b/learn-zig-to-be-a-beginner (main)> /usr/bin/ls ~/tmp
+c .a .b
 $ /usr/bin/ls ~/tmp # 下記のようになってほしい
 c
 ```
 
-ということで、`..` や `.` のようなエントリが表示される前に、
 まずは `-a` が指定されていなければ、`.a` や `.b` を表示しない機能を追加します。
-
 コマンドライン引数の処理が複雑になりそうなので、別に関数を用意します。
-今回は、メモリアロケータを使わないで実装してみるということで、
-`std.ArrayList([]const u8)` ではなく、 `[N][]const u8` を使ってみます。
+今回はメモリアロケータを利用して、 `std.ArrayList([]const u8)` を使ってみます。
 
 ```zig
-const maximum_target_count: usize = 32;
 const CommandLineOption = struct {
-    targets: [maximum_target_count][]const u8 = undefined,
-    target_count: usize = 0,
+    targets: std.ArrayList([]const u8),
     all_files: bool = false,
+    show_inode_number: bool = false,
 };
 
 const CmdArgsParseError = error{
     MaximumTargetCountReached,
-};
+} || std.mem.Allocator.Error;
 
 fn parseCmdArgs(
+    allocator: std.mem.Allocator,
     args: *std.process.ArgIterator,
 ) CmdArgsParseError!CommandLineOption {
-    var opt = CommandLineOption{};
+    var opt = CommandLineOption{
+        .targets = std.ArrayList([]const u8).init(allocator),
+    };
     while (args.next()) |arg| {
         if (std.mem.eql(u8, arg, "-a")) {
             opt.all_files = true;
             continue;
         }
 
-        if (opt.target_count == 32) {
-            return CmdArgsParseError.MaximumTargetCountReached;
-        }
-
-        opt.targets[opt.target_count] = arg;
-        opt.target_count += 1;
+        try opt.targets.append(arg);
     }
 
     return opt;
@@ -176,21 +171,21 @@ fn parseCmdArgs(
 ```
 
 あとは、これを利用してmain関数を置き換えればOKです。
-`while (condition_expression) : (poststep_expression)` を利用して、
-ループのたびにインデックスを更新します。
 
 ```zig
 pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+
     var args = std.process.ArgIterator.init();
     std.debug.assert(args.next() != null);
 
-    const opt = try parseCmdArgs(&args);
+    const opt = try parseCmdArgs(allocator, &args);
+    defer opt.targets.deinit();
+
     var stdout = std.io.getStdOut().writer();
 
-    var index: usize = 0;
-    while (index < opt.target_count) : (index += 1) {
-        const target_path = opt.targets[index];
-
+    for (opt.targets.items) |target_path| {
         const cwd = std.fs.cwd();
 
         const target_dir = if (std.fs.path.isAbsolute(target_path)) blk: {
@@ -199,9 +194,9 @@ pub fn main() !void {
             break :else_blk try cwd.openIterableDir(target_path, std.fs.Dir.OpenDirOptions{});
         };
 
-        var target_dir_entries = target_dir.iterate();
-        while (try target_dir_entries.next()) |target_dir_entry| {
-            const hide_file = !opt.all_files;
+        const target_dir_entries = try collectFileInformation(allocator, target_dir);
+        const hide_file = !opt.all_files;
+        for (target_dir_entries.items) |target_dir_entry| {
             if (hide_file and target_dir_entry.name[0] == '.') {
                 continue;
             }
@@ -214,12 +209,152 @@ pub fn main() !void {
 
 ```shell
 $ ./zig-out/bin/ls-subset ~/tmp
-c ⏎                                                                                                                                                                                                                drumato@pop-os ~/g/g/D/m/b/l/ls-subset (main)> ./zig-out/bin/ls-subset -a ~/tmp
+c
 $ ./zig-out/bin/ls-subset -a ~/tmp
 c .a .b
 ```
 
 ## inode番号を表示する
+
+続いてinode番号を表示する `-i` オプションを作ってみます。
+まずはさくっとオプション解析部分を変更します。
+
+```zig
+const CommandLineOption = struct {
+    targets: std.ArrayList([]const u8),
+    all_files: bool = false,
+    show_inode_number: bool = false, // 追加
+};
+
+fn parseCmdArgs(
+    allocator: std.mem.Allocator,
+    args: *std.process.ArgIterator,
+) CmdArgsParseError!CommandLineOption {
+    var opt = CommandLineOption{
+        .targets = std.ArrayList([]const u8).init(allocator),
+    };
+    while (args.next()) |arg| {
+        if (std.mem.eql(u8, arg, "-a")) {
+            opt.all_files = true;
+            continue;
+        }
+        if (std.mem.eql(u8, arg, "-i")) { // 追加
+            opt.show_inode_number = true;
+            continue;
+        }
+
+        try opt.targets.append(arg);
+    }
+
+    return opt;
+}
+```
+
+次にinode番号を取得するロジックです。
+現在は `std.fs.IterableDir.Entry` のそれぞれから `name` メンバを出力していますが、
+この型はinode番号を持っていないので、少し大きな改変が必要です。
+一方、ドキュメントを読んでみると、 `std.fs.Dir` と `std.fs.File` には `stat()` が存在し、
+これによって得られる `std.fs.Dir.Stat/std.fs.File.Stat` は `inode` を持っていることがわかります。
+
+ということで、うまく各 `std.fs.IterableDir.Entry` を `std.fs.Dir/std.fs.File` に変換すれば良さそうです。
+これは、 `kind` というメンバを利用して実現できます。
+なお、今回は `.NamedPipe` や `.BlockDevice` などのkindには対応しないことにします。
+
+```zig
+const FileInformation = struct {
+    name: []const u8,
+    inode: u64,
+};
+
+fn collectFileInformation(
+    allocator: std.mem.Allocator,
+    target_dir: std.fs.IterableDir,
+) !std.ArrayList(FileInformation) {
+    var files = std.ArrayList(FileInformation).init(allocator);
+
+    var iterator = target_dir.iterate();
+    while (try iterator.next()) |dir_entry| {
+        const file = switch (dir_entry.kind) {
+            .File => file_blk: {
+                const file = try target_dir.dir.openFile(dir_entry.name, std.fs.File.OpenFlags{});
+                const stat = try file.stat();
+                break :file_blk FileInformation{
+                    .name = dir_entry.name,
+                    .inode = stat.inode,
+                };
+            },
+            .Directory => dir_blk: {
+                const dir = try target_dir.dir.openDir(dir_entry.name, std.fs.Dir.OpenDirOptions{});
+                const stat = try dir.stat();
+                break :dir_blk FileInformation{
+                    .name = dir_entry.name,
+                    .inode = stat.inode,
+                };
+            },
+            else => unreachable,
+        };
+        try files.append(file);
+    }
+
+    return files;
+}
+```
+
+あとはmain関数側を書き換えます。
+お行儀の良いコードとして、`deinit()` を呼ぶのを忘れないでください。
+
+```zig
+pub fn main() !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+
+    var args = std.process.ArgIterator.init();
+    std.debug.assert(args.next() != null);
+
+    const opt = try parseCmdArgs(allocator, &args);
+    defer opt.targets.deinit();
+
+    var stdout = std.io.getStdOut().writer();
+    for (opt.targets.items) |target_path| {
+        const cwd = std.fs.cwd();
+
+        const target_dir = if (std.fs.path.isAbsolute(target_path)) blk: {
+            break :blk try std.fs.openIterableDirAbsolute(target_path, std.fs.Dir.OpenDirOptions{});
+        } else else_blk: {
+            break :else_blk try cwd.openIterableDir(target_path, std.fs.Dir.OpenDirOptions{});
+        };
+
+        const target_dir_entries = try collectFileInformation(allocator, target_dir);
+        const hide_file = !opt.all_files;
+        for (target_dir_entries.items) |target_dir_entry| {
+            if (hide_file and target_dir_entry.name[0] == '.') {
+                continue;
+            }
+
+            if (opt.show_inode_number) {
+                try stdout.print("{s}:{} ", .{ target_dir_entry.name, target_dir_entry.inode });
+            } else {
+                try stdout.print("{s} ", .{target_dir_entry.name});
+            }
+        }
+    }
+}
+```
+
+いろいろ試してみましょう。
+
+```shell
+$ ./zig-out/bin/ls-subset ~/tmp
+c .a .b
+$ ./zig-out/bin/ls-subset -a ~/tmp
+c:5280124
+$ ./zig-out/bin/ls-subset -a -i ~/tmp
+c:5280124 .a:5280081 .b:5280121
+$ ./zig-out/bin/ls-subset -a -i ~/tmp
+5280064 ./  2097154 ../  5280081 .a  5280121 .b  5280124 c
+```
+
+## `-l` で詳細な情報を出力する
 
 TODO
 
