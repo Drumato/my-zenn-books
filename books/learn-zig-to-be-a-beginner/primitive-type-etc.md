@@ -170,4 +170,4 @@ Primitive Types には他にも型が存在しますが、
 - <https://ziglang.org/documentation/0.10.1/#Primitive-Types>
 - <https://ziglang.org/documentation/0.10.1/#Primitive-Values>
 - <https://ziglang.org/documentation/0.10.1/#Integers>
-- <
+
