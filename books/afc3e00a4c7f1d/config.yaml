@@ -1,0 +1,20 @@
+title: "[全部無料]最小限で理解しつつ作るRust製ELFパーサ入門"
+summary: |-
+  Linuxなどで標準採用されている実行可能ファイル形式のELFを理解するために、
+  Rustでnom(パーサコンビネータ)を使いながらサクッとELFパーサを実装します。
+  Rustの基本的な読み書きができる人向けに、かなり初歩的なところから説明します。
+  有料にしている理由も特にないので、
+  最終の空ページのみ有料にしています。
+topics: ["rust", "elf", "nom"]
+published: true
+price: 200
+allow_override: true
+chapters:
+- ch01
+- ch02
+- ch03
+- ch04
+- ch05
+- ch06
+- ch07
+- ch08
